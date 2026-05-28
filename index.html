@@ -6,16 +6,18 @@
     <title>Real Time Chat</title>
 </head>
 <body>
-    <input type="text" id="room" placeholder="enter your room" required>
-    <button onclick="joinRoom()">Join Room</button>
-    <br><br>
-
     <input type="text" id="username" placeholder="enter username" required>
     <button onclick="joinChat()">Enter Chat</button>
     <br><br>
 
-    <input type="text" id="message">
-    <button onclick="sendMessage()">Send</button>
+    <input type="text" id="room" placeholder="enter your room" required>
+    <button onclick="joinRoom()">Join Room</button>
+    <br><br>
+
+    
+
+    <input type="text" id="message" placeholder="enter Message">
+    <button onclick="sendMessage()" >Send</button>
 
     <div id="messages"></div>
     

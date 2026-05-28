@@ -26,6 +26,11 @@ wss.on('connection',(socket)=>{
         console.log(parsedData);
 
         if(parsedData.type==='join-room'){
+            if(!socket.username){
+                console.log('enter your username first');
+                return ;
+            }
+
             const roomId=parsedData.room;
             socket.roomId=parsedData.room;
             console.log(roomId);
@@ -55,14 +60,20 @@ wss.on('connection',(socket)=>{
         }
 
         if(parsedData.type==='chat'){
+            if(!socket.username){
+                console.log('enter your username first');
+                return ;
+            }
 
             console.log(parsedData.message);
             const roomId=socket.roomId;
             const message={
                 id:messageId++,
+                roomId:roomId,
                 username:socket.username,
                 text:parsedData.message,
-                upvote:0
+                upvote:0,
+                voters:new Set()
             }
 
             rooms.get(roomId).messages.push(message);
@@ -74,6 +85,31 @@ wss.on('connection',(socket)=>{
                     
                 }))
                 
+            })
+        }
+
+        if(parsedData.type==='update-upvote'){
+
+            if(!socket.username){
+                console.log('enter your username first');
+                return ;
+            }
+            const messageId=parsedData.Id;
+            const roomId=socket.roomId;
+            
+            const message=rooms.get(roomId).messages.find((msg)=>msg.id===messageId);
+            message.voters.add(socket.username);
+            message.upvote=message.voters.size;
+
+            if(message.voters.has(socket.username)){
+                console.log('you have already Voted');
+                return ;
+            }
+            rooms.get(roomId).users.forEach((client)=>{
+                client.send(JSON.stringify({
+                    type:'update-upvote',   
+                    message:message
+                }))
             })
         }
 
