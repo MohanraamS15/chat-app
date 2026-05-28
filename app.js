@@ -25,6 +25,31 @@ socket.onmessage=(event)=>{
         document.getElementById('messages').appendChild(div);
     }
 
+
+    if(data.type==='highlight-message'){
+        
+        const div=document.getElementById('highlight-container');
+        div.style.display = 'block';
+        const highlight=document.createElement('div');
+        
+        highlight.innerHTML=
+            ` <h5>${data.message.text} :- ${data.message.username}</h5>  `
+
+
+        div.appendChild(highlight);
+
+    }
+
+    if(data.type==='alert-message'){
+        const div=document.getElementById('alert-container');
+        div.style.display = 'block';
+
+        const alertDiv=document.createElement('div');
+        alertDiv.innerHTML=
+             ` <h5>${data.message.text} :- ${data.message.username}</h5>  `;
+        div.appendChild(alertDiv);
+    }
+
     
 }
 

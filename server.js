@@ -26,20 +26,28 @@ wss.on('connection',(socket)=>{
         console.log(parsedData);
 
         if(parsedData.type==='join-room'){
-            if(!socket.username){
-                console.log('enter your username first');
-                return ;
-            }
+            // if(!socket.username){
+            //     console.log('enter your username first');
+            //     return ;
+            // }
 
             const roomId=parsedData.room;
             socket.roomId=parsedData.room;
             console.log(roomId);
             if(!rooms.get(roomId)){
                 rooms.set(roomId,{
+                    admin:"",
                     users:[],
-                    messages:[]
+                    messages:[],
+                    highlightMessage:[],
+                    alertMessage:[]
                 });
             }
+
+            if(socket.username==='Mohan'){
+                rooms.get(roomId).admin='Mohan';
+            }
+
             rooms.get(roomId).users.push(socket);
 
             console.log(`${socket.username} joined the room ${socket.roomId}`);
@@ -55,7 +63,9 @@ wss.on('connection',(socket)=>{
         }
 
         if(parsedData.type==='join-user'){
+            
             socket.username=parsedData.username;
+            
             console.log(`${socket.username} have joined the chat`);
         }
 
@@ -101,16 +111,66 @@ wss.on('connection',(socket)=>{
             message.voters.add(socket.username);
             message.upvote=message.voters.size;
 
-            if(message.voters.has(socket.username)){
-                console.log('you have already Voted');
-                return ;
-            }
             rooms.get(roomId).users.forEach((client)=>{
                 client.send(JSON.stringify({
                     type:'update-upvote',   
                     message:message
                 }))
             })
+
+            const adminName=rooms.get(roomId).admin;
+            if(!adminName){
+                    console.log('there is no admin');
+                    return ;
+            }
+            
+
+            if(message.upvote<3){
+                return ;
+            }
+            
+            const users=rooms.get(roomId).users;
+            const socketName=users.find((user)=>adminName===user.username);
+
+            if(message.upvote>=10){
+                const alreadyAlerted=rooms.get(roomId).alertMessage.find((msg)=>msg.id===message.id);
+                if(alreadyAlerted){
+                    return ;
+                }
+
+                rooms.get(roomId).alertMessage.push(message);
+                socketName.send(JSON.stringify({
+                    type:'alert-message',
+                    message:message
+                }))
+            }
+
+            if(message.upvote>=3){
+                const alreadyHighlighted=rooms.get(roomId).highlightMessage.find((msg)=>msg.id===message.id);
+                if(alreadyHighlighted){
+                    return ;
+                }
+                rooms.get(roomId).highlightMessage.push(message); 
+
+                socketName.send(JSON.stringify({
+                    type:'highlight-message',
+                    message:message
+                }))
+
+
+
+
+            }
+
+            
+
+
+
+            if(message.voters.has(socket.username)){
+                console.log('you have already Voted');
+                return ;
+            }
+            
         }
 
 
