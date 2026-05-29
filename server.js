@@ -25,6 +25,7 @@ wss.on('connection',(socket)=>{
         const parsedData=JSON.parse(data);
         console.log(parsedData);
 
+        //User join Room
         if(parsedData.type==='join-room'){
             // if(!socket.username){
             //     console.log('enter your username first');
@@ -35,11 +36,13 @@ wss.on('connection',(socket)=>{
 
             const roomId=parsedData.room;
             socket.roomId=parsedData.room;
+            socket.lastMessageTime=0;
             console.log(roomId);
             if(!rooms.get(roomId)){
                 rooms.set(roomId,{
                     admin:"",
                     is_open:true,
+                    cool_down_time:1000,
                     users:[],
                     messages:[],
                     highlightMessage:[],
@@ -73,10 +76,21 @@ wss.on('connection',(socket)=>{
                     total:total
                 }))
             })
+
+            //sending online users
+            const userNames=rooms.get(roomId).users.map((user)=>user.username)
+            rooms.get(roomId).users.forEach((client)=>{
+                client.send(JSON.stringify({
+                    type:"online-users",
+                    usernames:userNames
+                }))
+            })
             
 
         }
 
+
+        //User enter the User Name
         if(parsedData.type==='join-user'){
             
             socket.username=parsedData.username;
@@ -84,15 +98,32 @@ wss.on('connection',(socket)=>{
             console.log(`${socket.username} have joined the chat`);
         }
 
+
+        //User enters the Chat ,message
         if(parsedData.type==='chat'){
             if(!socket.username){
                 console.log('enter your username first');
                 return ;
             }
 
-
             const roomId=socket.roomId;
 
+            const now=Date.now();
+            const cdt=rooms.get(roomId).cool_down_time;
+            const gap=now-socket.lastMessageTime;
+
+            if(gap<cdt){
+                const remainingTime=Math.round((cdt-gap)/1000);
+                socket.send(JSON.stringify({
+                    type:"warning-message",
+                    message:`Please wait for ${remainingTime+1} seconds for the next message`
+                }))
+                return ;
+            }
+
+
+
+            
             if(!rooms.get(roomId).is_open){
                 socket.send(JSON.stringify({
                     type:"warning-message",
@@ -100,6 +131,10 @@ wss.on('connection',(socket)=>{
                 }))
                 return ;
             }
+
+
+
+            //creating message structure
             const message={
                 id:messageId++,
                 roomId:roomId,
@@ -110,7 +145,9 @@ wss.on('connection',(socket)=>{
             }
 
             rooms.get(roomId).messages.push(message);
-            console.log(rooms.get(roomId).messages);
+            socket.lastMessageTime=now;
+            
+            //sending message to all users in the room
             rooms.get(roomId).users.forEach((client)=>{
                     client.send(JSON.stringify({
                     type:"chat",
@@ -119,8 +156,11 @@ wss.on('connection',(socket)=>{
                 }))
                 
             })
+
+            
         }
 
+        //adding the upvote 
         if(parsedData.type==='update-upvote'){
 
             if(!socket.username){
@@ -131,12 +171,16 @@ wss.on('connection',(socket)=>{
             const roomId=socket.roomId;
             
             const message=rooms.get(roomId).messages.find((msg)=>msg.id===messageId);
-
+            
+            //check the user have already upvoted the same msg
             if(message.voters.has(socket.username)){
-                console.log('you have already Voted');
+                socket.send(JSON.stringify({
+                    type:"warning-message",
+                    message:'you have already Voted'
+                }))
                 return ;
             }
-
+        
             message.voters.add(socket.username);
             message.upvote=message.voters.size;
 
@@ -159,8 +203,13 @@ wss.on('connection',(socket)=>{
             }
             
             const users=rooms.get(roomId).users;
-            const socketName=users.find((user)=>adminName===user.username);
+            const adminSocket=users.find((user)=>adminName===user.username);
 
+            if(!adminSocket){
+                console.log('the admin is in Offline');
+                return;
+            }
+            //pushing the msg into Alert container
             if(message.upvote>=10){
                 const alreadyAlerted=rooms.get(roomId).alertMessage.find((msg)=>msg.id===message.id);
                 if(alreadyAlerted){
@@ -168,12 +217,14 @@ wss.on('connection',(socket)=>{
                 }
 
                 rooms.get(roomId).alertMessage.push(message);
-                socketName.send(JSON.stringify({
+                adminSocket.send(JSON.stringify({
                     type:'alert-message',
                     message:message
                 }))
             }
 
+            //pushing the msg into Highlight container
+            console.log("Admin:", adminName);
             if(message.upvote>=3){
                 const alreadyHighlighted=rooms.get(roomId).highlightMessage.find((msg)=>msg.id===message.id);
                 if(alreadyHighlighted){
@@ -181,25 +232,15 @@ wss.on('connection',(socket)=>{
                 }
                 rooms.get(roomId).highlightMessage.push(message); 
 
-                socketName.send(JSON.stringify({
+                adminSocket.send(JSON.stringify({
                     type:'highlight-message',
                     message:message
                 }))
-
-
-
-
-            }
-
-            
-
-
-
-            
+            }  
             
         }
 
-
+        //Adming opens the Chat
         if(parsedData.type==='open-chat'){
             const roomId=socket.roomId;
             if(rooms.get(roomId).is_open){
@@ -215,6 +256,7 @@ wss.on('connection',(socket)=>{
             
         }
 
+        //Admin Closes the Chat
         if(parsedData.type==='close-chat'){
 
             const roomId=socket.roomId;
@@ -237,12 +279,17 @@ wss.on('connection',(socket)=>{
         
     })
 
+    //User when closes the chat
     socket.on('close',()=>{
         
         const roomId=socket.roomId;
         
         if(!roomId){
             return ;
+        }
+
+        if(rooms.get(roomId).admin==='socket.userName'){
+            room.admin=""
         }
 
         

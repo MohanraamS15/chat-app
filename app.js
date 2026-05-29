@@ -60,6 +60,7 @@ socket.onmessage=(event)=>{
     }
 
     if(data.type==='warning-message'){
+        // should add the time effect for 2s
         const div=document.getElementById('warning-message');
         const value=`<h3>${data.message}</h3>`;
 
@@ -71,6 +72,20 @@ socket.onmessage=(event)=>{
         const div=document.getElementById('total-members-container');
         div.innerHTML=`<h3>Total Members in this Room:${data.total}</h3>`;
         console.log('hiii');
+    }
+
+    if(data.type==='online-users'){
+        const usernames=data.usernames;
+        const div=document.getElementById('online-users-container');
+        div.innerHTML=`<h2>Online Users</h2>`;
+
+        const value=document.createElement('p');
+        usernames.forEach((username)=>{
+
+            value.innerHTML+=`<h5>${username}</h5>`;
+            
+        })
+        div.appendChild(value);
     }
 
 
