@@ -37,6 +37,7 @@ wss.on('connection',(socket)=>{
             if(!rooms.get(roomId)){
                 rooms.set(roomId,{
                     admin:"",
+                    is_open:true,
                     users:[],
                     messages:[],
                     highlightMessage:[],
@@ -46,6 +47,10 @@ wss.on('connection',(socket)=>{
 
             if(socket.username==='Mohan'){
                 rooms.get(roomId).admin='Mohan';
+                console.log('hello');
+                socket.send(JSON.stringify({
+                    type:"admin-access"
+                }))
             }
 
             rooms.get(roomId).users.push(socket);
@@ -75,8 +80,16 @@ wss.on('connection',(socket)=>{
                 return ;
             }
 
-            console.log(parsedData.message);
+
             const roomId=socket.roomId;
+
+            if(!rooms.get(roomId).is_open){
+                socket.send(JSON.stringify({
+                    type:"warning-message",
+                    message:'The Chat is currently Closed,Message after the Open'
+                }))
+                return ;
+            }
             const message={
                 id:messageId++,
                 roomId:roomId,
@@ -108,6 +121,12 @@ wss.on('connection',(socket)=>{
             const roomId=socket.roomId;
             
             const message=rooms.get(roomId).messages.find((msg)=>msg.id===messageId);
+
+            if(message.voters.has(socket.username)){
+                console.log('you have already Voted');
+                return ;
+            }
+
             message.voters.add(socket.username);
             message.upvote=message.voters.size;
 
@@ -166,10 +185,40 @@ wss.on('connection',(socket)=>{
 
 
 
-            if(message.voters.has(socket.username)){
-                console.log('you have already Voted');
+            
+            
+        }
+
+
+        if(parsedData.type==='open-chat'){
+            const roomId=socket.roomId;
+            if(rooms.get(roomId).is_open){
+                console.log('The chat is already in open');
+                socket.send(JSON.stringify({
+                    type:"warning-message",
+                    message:'The Chat is already in Open'
+                }))
                 return ;
             }
+            rooms.get(roomId).is_open=true;
+            
+            
+        }
+
+        if(parsedData.type==='close-chat'){
+
+            const roomId=socket.roomId;
+
+            if(!rooms.get(roomId).is_open){
+                console.log('The chat is already in closed');
+                socket.send(JSON.stringify({
+                    type:"warning-message",
+                    message:'The Chat is already in Closed'
+                }))
+                return ;
+            }
+            rooms.get(roomId).is_open=false
+            
             
         }
 

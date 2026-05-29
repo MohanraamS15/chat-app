@@ -19,11 +19,23 @@
     <input type="text" id="message" placeholder="enter Message" value="hello">
     <button onclick="sendMessage()" >Send</button>
 
+    <br><br>
+
+    <button id="chat-open" style="display:none;" onclick="openChat()">Open Chat</button>
+    <button id="chat-close" style="display:none;" onclick="closeChat()">Close Chat</button>
+
     <div id="messages"></div>
+    
+    <br><br><br>
+
+    <div id="warning-message"></div>
+    <br><br><br>
+
     <div id="highlight-container"  style="display:none;">
         <h2>Highlighted Messages</h2>
     </div>
 
+    <br><br><br>
     <div id="alert-container"  style="display:none;">
         <h2>Alerted Messages</h2>
     </div>

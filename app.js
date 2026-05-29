@@ -50,6 +50,25 @@ socket.onmessage=(event)=>{
         div.appendChild(alertDiv);
     }
 
+    if(data.type==='admin-access'){
+        console.log('hello');
+        const buttonOpen=document.getElementById('chat-open');
+        const buttonClose=document.getElementById('chat-close');
+
+        buttonOpen.style.display='block';
+        buttonClose.style.display='block';
+    }
+
+    if(data.type==='warning-message'){
+        const div=document.getElementById('warning-message');
+        const value=`<h3>${data.message}</h3>`;
+
+        div.innerHTML=value;
+        
+    }
+
+
+
     
 }
 
@@ -90,4 +109,18 @@ function updateUpvote(messageId){
     })
 
     socket.send(data);
+}
+
+function openChat(){
+    console.log('hi');
+    socket.send(JSON.stringify({
+        type:'open-chat'
+    }))
+}
+
+function closeChat(){
+    console.log('hi');
+    socket.send(JSON.stringify({
+        type:'close-chat'
+    }))
 }
