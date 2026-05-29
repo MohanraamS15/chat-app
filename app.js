@@ -67,6 +67,12 @@ socket.onmessage=(event)=>{
         
     }
 
+    if(data.type==='total-users'){
+        const div=document.getElementById('total-members-container');
+        div.innerHTML=`<h3>Total Members in this Room:${data.total}</h3>`;
+        console.log('hiii');
+    }
+
 
 
     

@@ -30,6 +30,8 @@ wss.on('connection',(socket)=>{
             //     console.log('enter your username first');
             //     return ;
             // }
+            
+
 
             const roomId=parsedData.room;
             socket.roomId=parsedData.room;
@@ -61,6 +63,14 @@ wss.on('connection',(socket)=>{
                 socket.send(JSON.stringify({
                     type:"chat-history",
                     message:message
+                }))
+            })
+
+            const total=rooms.get(roomId).users.length;
+            rooms.get(roomId).users.forEach((client)=>{
+                client.send(JSON.stringify({
+                    type:'total-users',
+                    total:total
                 }))
             })
             
@@ -228,7 +238,27 @@ wss.on('connection',(socket)=>{
     })
 
     socket.on('close',()=>{
-        console.log('Client got Disconnected');
+        
+        const roomId=socket.roomId;
+        
+        if(!roomId){
+            return ;
+        }
+
+        
+
+        rooms.get(roomId).users=rooms.get(roomId).users.filter((user)=>user!==socket);
+
+        const total=rooms.get(roomId).users.length;
+
+        rooms.get(roomId).users.forEach((client)=>{
+            client.send(JSON.stringify({
+                type:'total-users',
+                total:total
+            }))
+        })
+
+        console.log(`${socket.username} got Disconnected`);
     })
 })
 
