@@ -6,7 +6,7 @@ import crypto from 'crypto';
 const app = express();
 
 app.use(express.json());
-app.use(express.static("."));
+app.use(express.static("./src"));
 
 const server = createServer(app);
 
