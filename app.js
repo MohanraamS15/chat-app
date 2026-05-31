@@ -37,7 +37,7 @@ socket.onmessage=(event)=>{
     if(data.type==='chat' || data.type==='chat-history'){
         const div=document.createElement('div');
         div.id=`${data.message.roomId}-${data.message.id}-div`;
-        div.innerHTML=`${data.message.username} : ${data.message.text} -- ${data.message.id}`;
+        div.innerHTML=`${data.message.username} : ${data.message.text}`;
         
         const button=document.createElement('button');
         button.id=`${data.message.roomId}-${data.message.id}`;
@@ -93,7 +93,10 @@ socket.onmessage=(event)=>{
 
     if(data.type==='room-message'){
         const div=document.getElementById('room-message-container');
-        div.innerHTML=`<h2>${data.message}</h2>`
+        div.innerHTML=`<h2>${data.message}</h2>`;
+        setTimeout(() => {
+            div.innerHTML = '';  
+        }, 2000);
     }
 
     if(data.type==='warning-message'){
@@ -101,6 +104,10 @@ socket.onmessage=(event)=>{
         const div=document.getElementById('warning-message-container');
         const value=`<h3>${data.message}</h3>`;
         div.innerHTML=value;
+
+        setTimeout(() => {
+            div.innerHTML = '';  
+        }, 2000);
         
     }
 

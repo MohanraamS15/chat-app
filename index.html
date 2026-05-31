@@ -4,55 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real Time Chat</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="onboarding">
         <input type="text" id="username" placeholder="enter username" value="Mohan" required>
-        <br><br>
-        
-        <input type="text" id="create-room" placeholder="Create your room" value="1" required>
+        <input type="text" id="create-room" placeholder="room id to create" value="1" required>
         <button onclick="createRoom()">Create Room</button>
-        <div id="room-message-container"> </div>
 
+        <div id="room-message-container"></div>
 
-
-        <input type="text" id="join-room" placeholder="Join The room" value="1" required>
+        <input type="text" id="join-room" placeholder="room id to join" value="1" required>
         <button onclick="joinRoom()">Join Room</button>
-
     </div>
 
-    <div id="chat-container">
+    <div id="chat-container" style="display:none;">
         <div id="room-info-container"></div>
-        <br><br>
-
-        
-
-        <input type="text" id="message" placeholder="enter Message" value="hello">
-        <button onclick="sendMessage()" >Send</button>
-
-        <br><br>
-
-        <button id="chat-open" style="display:none;" onclick="openChat()">Open Chat</button>
-        <button id="chat-close" style="display:none;" onclick="closeChat()">Close Chat</button>
 
         <div id="messages"></div>
-        
-        <br><br><br>
 
-        <div id="warning-message-container"></div>
-        <br><br><br>
+        <div class="message-row">
+            <input type="text" id="message" placeholder="type a message...">
+            <button class="send-btn" onclick="sendMessage()">Send</button>
+            <button id="chat-open" style="display:none;" onclick="openChat()">Open</button>
+            <button id="chat-close" style="display:none;" onclick="closeChat()">Close</button>
+        </div>
 
         <div id="online-users-container"></div>
 
-        <div id="highlight-container"  style="display:none;">
-            <h2>Highlighted Messages</h2>
+        <div id="warning-message-container"></div>
+
+        <div id="highlight-container" style="display:none;">
+            <h2>Highlighted</h2>
         </div>
 
-        <br><br><br>
-        <div id="alert-container"  style="display:none;">
-            <h2>Alerted Messages</h2>
+        <div id="alert-container" style="display:none;">
+            <h2>Alerted</h2>
         </div>
     </div>
+
     <script src="app.js"></script>
 </body>
 </html>
