@@ -6,43 +6,52 @@
     <title>Real Time Chat</title>
 </head>
 <body>
-    <input type="text" id="username" placeholder="enter username" value="Mohan" required>
-    <button onclick="joinChat()">Enter Chat</button>
-    <br><br>
+    <div id="onboarding">
+        <input type="text" id="username" placeholder="enter username" value="Mohan" required>
+        <br><br>
+        
+        <input type="text" id="create-room" placeholder="Create your room" value="1" required>
+        <button onclick="createRoom()">Create Room</button>
+        <div id="room-message-container"> </div>
 
-    <input type="text" id="room" placeholder="enter your room" value="1" required>
-    <button onclick="joinRoom()">Join Room</button>
 
-    <div id="total-members-container"> </div>
-    <br><br>
 
-    
+        <input type="text" id="join-room" placeholder="Join The room" value="1" required>
+        <button onclick="joinRoom()">Join Room</button>
 
-    <input type="text" id="message" placeholder="enter Message" value="hello">
-    <button onclick="sendMessage()" >Send</button>
-
-    <br><br>
-
-    <button id="chat-open" style="display:none;" onclick="openChat()">Open Chat</button>
-    <button id="chat-close" style="display:none;" onclick="closeChat()">Close Chat</button>
-
-    <div id="messages"></div>
-    
-    <br><br><br>
-
-    <div id="warning-message"></div>
-    <br><br><br>
-
-    <div id="online-users-container" >
     </div>
 
-    <div id="highlight-container"  style="display:none;">
-        <h2>Highlighted Messages</h2>
-    </div>
+    <div id="chat-container">
+        <div id="room-info-container"></div>
+        <br><br>
 
-    <br><br><br>
-    <div id="alert-container"  style="display:none;">
-        <h2>Alerted Messages</h2>
+        
+
+        <input type="text" id="message" placeholder="enter Message" value="hello">
+        <button onclick="sendMessage()" >Send</button>
+
+        <br><br>
+
+        <button id="chat-open" style="display:none;" onclick="openChat()">Open Chat</button>
+        <button id="chat-close" style="display:none;" onclick="closeChat()">Close Chat</button>
+
+        <div id="messages"></div>
+        
+        <br><br><br>
+
+        <div id="warning-message-container"></div>
+        <br><br><br>
+
+        <div id="online-users-container"></div>
+
+        <div id="highlight-container"  style="display:none;">
+            <h2>Highlighted Messages</h2>
+        </div>
+
+        <br><br><br>
+        <div id="alert-container"  style="display:none;">
+            <h2>Alerted Messages</h2>
+        </div>
     </div>
     <script src="app.js"></script>
 </body>

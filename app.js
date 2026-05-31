@@ -4,16 +4,40 @@ const socket=new WebSocket('ws://localhost:5000');
 socket.onmessage=(event)=>{
     const data=JSON.parse(event.data);
 
+    if(data.type==='room-created'){
+        const {roomId,username}=data.message;
+        const adminToken=localStorage.getItem('adminToken');
+        console.log('tok',adminToken);
+        console.log(roomId);
+        socket.send(JSON.stringify({
+            type:"join-room",
+            username:username,
+            room:roomId,
+            adminToken:adminToken
+        })) 
+
+
+    }
+
+
+    if(data.type==='room-joined'){
+        const onboarding=document.getElementById('onboarding');
+        onboarding.style.display='none';
+
+        const chatContainer=document.getElementById('chat-container');
+        chatContainer.style.display='block';
+    }
+
     if(data.type==='update-upvote'){
         const button=document.getElementById(`${data.message.roomId}-${data.message.id}`);
         button.innerText=`Upvotes : ${data.message.upvote}`;
     
     }
 
-    if(data.type==='chat' || data.type=='chat-history'){
+    if(data.type==='chat' || data.type==='chat-history'){
         const div=document.createElement('div');
         div.id=`${data.message.roomId}-${data.message.id}-div`;
-        div.innerText=`${data.message.username} : ${data.message.text} -- ${data.message.id}`;
+        div.innerHTML=`${data.message.username} : ${data.message.text} -- ${data.message.id}`;
         
         const button=document.createElement('button');
         button.id=`${data.message.roomId}-${data.message.id}`;
@@ -51,26 +75,40 @@ socket.onmessage=(event)=>{
     }
 
     if(data.type==='admin-access'){
-        console.log('hello');
+        const adminToken=data.adminToken;
+        console.log('admintoken',adminToken);
+        localStorage.setItem('adminToken',adminToken);
+
         const buttonOpen=document.getElementById('chat-open');
         const buttonClose=document.getElementById('chat-close');
+        const enterRoom=document.getElementById('join-room');
+
+        enterRoom.value=data.roomId;
+        
+        console.log('hi');
 
         buttonOpen.style.display='block';
         buttonClose.style.display='block';
     }
 
+    if(data.type==='room-message'){
+        const div=document.getElementById('room-message-container');
+        div.innerHTML=`<h2>${data.message}</h2>`
+    }
+
     if(data.type==='warning-message'){
         // should add the time effect for 2s
-        const div=document.getElementById('warning-message');
+        const div=document.getElementById('warning-message-container');
         const value=`<h3>${data.message}</h3>`;
-
         div.innerHTML=value;
         
     }
 
     if(data.type==='total-users'){
-        const div=document.getElementById('total-members-container');
-        div.innerHTML=`<h3>Total Members in this Room:${data.total}</h3>`;
+
+        const div=document.getElementById('room-info-container');
+        div.innerHTML=`<h2>Room ID: ${data.roomId}</h2>`
+        div.innerHTML+=`<h3>Total Members in this Room:${data.total}</h3>`;
         console.log('hiii');
     }
 
@@ -93,24 +131,47 @@ socket.onmessage=(event)=>{
     
 }
 
-function joinRoom(){
-    const userRoom=document.getElementById('room').value;
+function createRoom(){
+    const username=document.getElementById('username').value.trim();
+    const userRoom=document.getElementById('create-room').value.trim();
+    if(!username || !userRoom){
+        const div=document.getElementById('room-message-container');
+        div.innerHTML=`<h2>Enter Both Username and RoomID</h2>`;
+    }
 
-    socket.send(JSON.stringify({
-        type:"join-room",
-        room:userRoom
-    }))
-}
-
-
-
-function joinChat(){
-    const username=document.getElementById('username').value;
     socket.send(JSON.stringify({
         type:"join-user",
         username:username
     }))
+
+    socket.send(JSON.stringify({
+        type:"create-room",
+        room:userRoom
+     }))
 }
+
+function joinRoom(){
+    const username=document.getElementById('username').value.trim();
+    const userRoom=document.getElementById('join-room').value.trim();
+    const adminToken=localStorage.getItem('adminToken');
+    if(!username || !userRoom){
+        const div=document.getElementById('room-message-container');
+        div.innerHTML=`<h2>Enter Both Username and RoomID</h2>`;
+    }
+
+    socket.send(JSON.stringify({
+        type:"join-user",
+        username:username
+    }))
+
+    
+    socket.send(JSON.stringify({
+        type:"join-room",
+        room:userRoom,
+        adminToken:adminToken
+    }))
+}
+
 
 
 function sendMessage(){
@@ -134,14 +195,18 @@ function updateUpvote(messageId){
 
 function openChat(){
     console.log('hi');
+    const adminToken = localStorage.getItem('adminToken');
     socket.send(JSON.stringify({
-        type:'open-chat'
+        type:'open-chat',
+        adminToken:adminToken
     }))
 }
 
 function closeChat(){
     console.log('hi');
+    const adminToken = localStorage.getItem('adminToken');
     socket.send(JSON.stringify({
-        type:'close-chat'
+        type:'close-chat',
+        adminToken:adminToken
     }))
 }
